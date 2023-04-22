@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoos": "^0.0.1-security",
+    "mongoose": "^7.0.4"
+  },
+  "name": "backend_livecoding_proj",
+  "description": "First Backend Practice Project, E-comers app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/index.js"
+  },
+  "keywords": [
+    "course",
+    "fsjs2.0"
+  ],
+  "author": "Raviacts035",
+  "license": "ISC"
+}
