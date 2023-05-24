@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import app from './src/app.js'
-import { config } from "dotenv"
+import config from "./src/config/index.js"
 // dotenv is for environment variables, Just like Global variables
 
 //This below is IIF(immediate invoked Function), which call it self. 
