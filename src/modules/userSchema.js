@@ -35,6 +35,8 @@ userSchema.pre("save",async function(next){
     next()
 })
 
+
+// For schema methods, we can't use arrow functions
 userSchema.methods={
 
     // Compare Passwords maybe for login

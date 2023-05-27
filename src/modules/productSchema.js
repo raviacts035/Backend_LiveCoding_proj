@@ -1,3 +1,5 @@
+// FSJS2.0 8th feb-mega project
+
 import mongoose from "mongoose"
 
 const ProductSchema = mongoose.Schema({
