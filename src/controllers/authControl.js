@@ -94,3 +94,17 @@ export const Logout=asyncHandler(async (req, res,)=>{
         message: "Log Out Sucessful"
     })
 })
+
+// getProfile controller will/should be exicuted after "isLogedIn" middleware
+
+export const getProfile=asyncHandler(async (req,res)=>{
+    const {user}=req
+    
+    if(!user){
+        throw new CustomError("User doesn't exist's",404)
+    }
+    res.status(200).json({
+        success: true,
+        user
+    })
+})
