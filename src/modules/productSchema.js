@@ -16,8 +16,10 @@ const ProductSchema = mongoose.Schema({
     },
     discription:{
         type : String,
+        required :true,
         maxLength :[120, "Discription should be less then 120 charecters"]
     },
+    
     photos:[
         {
             secure_url:{
@@ -33,6 +35,10 @@ const ProductSchema = mongoose.Schema({
     sold:{
         type: Number,
         default:0
+    },
+    collectionId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Collection"
     }
 }, {timestamps:true})
 

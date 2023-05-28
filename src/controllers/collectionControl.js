@@ -1,4 +1,4 @@
-import collection from "../modules/collection.schema.js";
+import Collection from "../modules/collection.schema.js";
 import asyncHandler from "../service/asyncHandler.js";
 import CustomError from "../utils/CustomError.js"
 
@@ -10,7 +10,7 @@ export const createCollection=asyncHandler(async (req,res)=>{
         throw new CustomError("Collection name is required",402)
     }
 
-    let newCollection = await collection.create({
+    let newCollection = await Collection.create({
         name
     }) 
 
@@ -30,7 +30,7 @@ export const updateCollection=asyncHandler(async (req,res)=>{
         throw new CustomError("Collection name is required",402)
     }
 
-    let updatedCollection = await collection.findByIdAndUpdate(collectionId,{
+    let updatedCollection = await Collection.findByIdAndUpdate(collectionId,{
         name
     },{
         new:true,
@@ -56,7 +56,7 @@ export const deleteCollection=asyncHandler(async (req,res)=>{
         throw new CustomError("Collection name is required",402)
     }
     
-    const collectionToDelete=await collection.findById(collectionId);
+    const collectionToDelete=await Collection.findById(collectionId);
     if (!collectionToDelete){
         throw new CustomError("collection not Found",404)
     }
@@ -67,3 +67,17 @@ export const deleteCollection=asyncHandler(async (req,res)=>{
         message: "Collection deleted Sucessfully"
     })
 })
+
+export const getCOllection=asyncHandler(async (req,res)=>{
+    const allCOllection=Collection.find({})
+
+    if(!allCOllection){
+        throw new CustomError("Collection is Empty",404)
+    }
+
+    res.status(200).json({
+        sucess:true,
+        allCOllection,
+    })
+})
+
