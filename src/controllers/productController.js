@@ -63,3 +63,90 @@ export const addProduct =asyncHandler(async (req,res)=>{
         })
     })
 })
+
+// getProducts 
+export const getProducts =asyncHandler(async (req,res)=>{
+    const products =Product.find({});
+
+    if(!products){
+        throw new CustomError("No products avilable", 404)
+    }
+
+    res.status(200).json({
+        success:true,
+        products
+    })
+})
+
+// finding product by ID in request url/parameter 
+export const getProductById =asyncHandler(async (req,res)=>{
+    let {id:productId} =req.params;
+    if(!productId){
+        throw new CustomError("Product Id is required", 500)
+    }
+
+    const products =Product.findById(productId);
+
+    if(!products){
+        throw new CustomError("No products avilable", 404)
+    }
+
+    res.status(200).json({
+        success:true,
+        products
+    })
+})
+
+export const getProductsByCollectionId= asyncHandler(async (req, res)=>{
+    let {id:collectionId} =req.params;
+
+
+    if(!collectionId){
+        throw new CustomError("Collection ID is required", 500)
+    }
+
+    const products =Product.find({collectionId});
+
+    if(!products){
+        throw new CustomError("No products avilable", 404)
+    }
+
+    res.status(200).json({
+        success:true,
+        products
+    })
+})
+
+
+export const deleteProduct=asyncHandler(async (req,res)=>{
+    let {id:productId} =req.params;
+    if(!productId){
+        throw new CustomError("Product Id is required", 500)
+    }
+
+    const product =Product.findById(productId);
+
+    if(!product){
+        throw new CustomError("No product found", 404);
+    }
+
+    const deletePhotos=Promise.all(
+        product.photos.map(async (ele, index)=>{
+            await s3DeleteFile({
+                bucketName: config.s3_BUCKET_NAME,
+                key: `product/${productId}/image_${index+1}.png`
+            })
+        })
+    )
+    
+    //deleting product photos from AWS
+    await deletePhotos;
+    
+    //deleting entrys from DATABASE
+    await product.remove();
+
+    res.status(200).json({
+        success:true,
+        message:"Product deleted sucessfully"
+    })
+})
