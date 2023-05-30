@@ -3,7 +3,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import router from "./routes/index.js";
 
-
 const app=express()
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
@@ -15,10 +14,10 @@ app.get("/", (req,res)=>{
     })
 })
 
-app.use("/api", router)
+app.use("/api", router);
 
 app.all("*", (_req,res)=>{
-    res.status(404).json({
+    return res.status(404).json({
         success: false ,
         message : "Unable to find the path requested"
     })
