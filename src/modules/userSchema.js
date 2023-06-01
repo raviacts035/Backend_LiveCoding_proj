@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import AuthRoles from "../utils/authRoles.js"
+import AuthRoles from "../utils/authRoles.js";
 import bcrypt from "bcryptjs"
 import JWT from "jsonwebtoken";
-import { config } from "dotenv";
-import crypto from "crypto"
+import config from "../config/index.js";
+import crypto from "crypto";
 
 
 const userSchema= new mongoose.Schema(
@@ -23,6 +23,9 @@ const userSchema= new mongoose.Schema(
         minLength:[8,"Password should be minimus 8 char"],
         select:false
     },
+    role:{
+        type: String
+    },
     ForgetPasswordToken:String,
     forgotPasswordExpiry:String
 },{timestamps:true}
@@ -41,12 +44,13 @@ userSchema.methods={
 
     // Compare Passwords maybe for login
     comparePassword: async function (providedPassword){
-        return bcrypt.compare(providedPassword,this.password)
+        return await bcrypt.compare(providedPassword,this.password)
     },
 
     //generate JWT token
     getJwtToken : async function (){
-        const token= JWT.sign({_id: this._id },config.JWT_SECRET,{ expiresIn:config.JWT_EXPIRY})
+        const token= JWT.sign({_id: this._id }, config.JWT_SECRET,{ expiresIn:config.JWT_EXPIRY});
+        return token
     },
 
     // generate Forgot Password Token

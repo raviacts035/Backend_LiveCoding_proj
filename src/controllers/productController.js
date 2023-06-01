@@ -1,6 +1,6 @@
 import Product from "../modules/productSchema.js";
 import formidable from "formidable";
-import asyncHandler from "../service/asyncHandler";
+import asyncHandler from "../service/asyncHandler.js";
 import { s3FIleUpload, s3DeleteFile } from "../service/imageUploader.js";
 import { Mongoose } from "mongoose";
 import CustomError from "../utils/CustomError.js";
@@ -9,7 +9,7 @@ import { config } from "dotenv";
 
 
 export const addProduct =asyncHandler(async (req,res)=>{
-    const form = formidable({ multiples: true,keepExtensions:true });
+    const form = formidable({ multiples: true, keepExtensions:true });
 
     form.parse(req, async (err, fields, files) => {
         if(err){

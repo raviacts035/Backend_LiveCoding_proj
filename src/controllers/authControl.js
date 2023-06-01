@@ -1,8 +1,8 @@
 // FSJS2.0 9th feb-mega project
 
-import asyncHandler from "../service/asyncHandler";
+import asyncHandler from "../service/asyncHandler.js";
 import User from "../modules/userSchema.js";
-import CustomError from "../utils/CustomError";
+import CustomError from "../utils/CustomError.js";
 
 export const cookieOptions={
     expires : new Date(Date.now()+ 3* 24 * 60 * 60 * 1000),
@@ -24,14 +24,16 @@ export const signUp= asyncHandler(async (req,res)=>{
 
     // Check if user already exist's
     const userExistance=User.findOne({email})
-    if (userExistance) throw new CustomError("User Already exists", 500)
-
+    if (userExistance){
+        throw new CustomError("User Already exists", 500)
+    }
     // created new entry in DATABASE && db will return all entrys after completion
-    const user = User.create({
+    const user = await User.create({
         name,
         email,
         password
     });
+
     user.password=undefined;
     //generate JWT token 
 
@@ -57,16 +59,17 @@ export const logIn= asyncHandler(async (req, res)=>{
     if (!email || !password){
         throw new CustomError("Please enter Credentials");
     }
-
+    
     // Checking if email Matches
-    const user =User.findOne({email}).select("+password")
-    if (!user){
-        throw new CustomError("Invalid credentials!! ", 400)
+    const user =await User.findOne({email}).select("+password")
+    
+    if (!user.email){
+        throw new CustomError("User not found, please signUp!! ", 400)
     }
-
-    const passMatches=user.comparePassword(password)
+    
+    const passMatches=await user.comparePassword(password)
     if (passMatches){
-        const token = user.getJwtToken();
+        const token =await user.getJwtToken();
         user.password=undefined
 
         // Sending Back Responce to user, with selected fields only
@@ -98,6 +101,7 @@ export const logout=asyncHandler(async (req, res,)=>{
 // getProfile controller will/should be exicuted after "isLogedIn" middleware
 
 export const getProfile=asyncHandler(async (req,res)=>{
+    // user is a field added in isLoggedIn middleware
     const {user}=req
     
     if(!user){
