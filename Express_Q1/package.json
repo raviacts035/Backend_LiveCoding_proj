@@ -1,0 +1,25 @@
+{
+  "name": "express_q1",
+  "version": "1.0.0",
+  "description": "Simple post app backend with sample API's, that sends posts",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mongoose",
+    "nodejs",
+    "posts",
+    "app",
+    "fullstack"
+  ],
+  "author": "Raveendra Inturi",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.1.3",
+    "express": "^4.18.2",
+    "mongoose": "^7.2.2"
+  }
+}
