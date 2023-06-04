@@ -1,8 +1,8 @@
 // asyncHandler is a service like higher order function , that handles exixution failures
 
-const asyncHandler= (fn) => async (req,res)=>{
+const asyncHandler= (fn) => async (req,res,next)=>{
     try{
-        await fn(req, res)
+        await fn(req, res, next)
     }
     catch (error){
         res.status(error.code || 500).json({
