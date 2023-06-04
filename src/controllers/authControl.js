@@ -187,7 +187,7 @@ export const forgotPassword=asyncHandler(async (req, res)=>{
         user.ForgetPasswordToken=undefined;
         user.forgotPasswordExpiry=undefined;
         await user.save({validateBeforeSave:false})
-        
+
         res.status(200).json({
             success :true,
             message :"Email has been sent with reset password link"
@@ -198,5 +198,34 @@ export const forgotPassword=asyncHandler(async (req, res)=>{
 
 // User requests resetPassword with reset pass link sent through mail 
 export const resetPassword =asyncHandler(async (req, res)=>{
+    const {token : resetToken}=req.params;
+    const {password , confirmPassword}=req.body;
+
+    if (!resetPassword || !password || !confirmPassword){
+        throw new CustomError("Enter all required fields",403)
+    };
+
+    const user= await User.find({
+            ForgetPasswordToken: resetToken,
+            forgotPasswordExpiry: {$gt : Date.now()}
+    })
+
+    if (!user){
+        throw new CustomError("Reset Link is invalid or Expired",404);
+    }
     
+    user.password=password;
+    user.ForgetPasswordToken=undefined;
+    user.forgotPasswordExpiry=undefined;
+    await user.save()
+
+    const token =await user.getJwtToken()
+
+    res.cookie("token",token, cookieOptions);
+
+    res.status(200).json({
+        sucess:true,
+        message: "Succesfully password reseted",
+        user
+    })
 })
