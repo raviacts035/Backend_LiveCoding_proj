@@ -3,6 +3,7 @@
 import asyncHandler from "../service/asyncHandler.js";
 import User from "../modules/userSchema.js";
 import CustomError from "../utils/CustomError.js";
+import mailHelper from "../utils/mailHelper.js";
 
 export const cookieOptions={
     expires : new Date(Date.now()+ 3* 24 * 60 * 60 * 1000),
@@ -57,7 +58,7 @@ export const logIn= asyncHandler(async (req, res)=>{
     
     // validation
     if (!email || !password){
-        throw new CustomError("Please enter Credentials");
+        throw new CustomError("Please enter Credentials",403);
     }
     
     // Checking if email Matches
@@ -111,4 +112,91 @@ export const getProfile=asyncHandler(async (req,res)=>{
         success: true,
         user
     })
+})
+
+
+export const deleteUser= asyncHandler(async (req, res)=>{
+    // colect credentials 
+    const {email, password }= req.body;
+    
+    // validation
+    if (!email || !password){
+        throw new CustomError("Please enter Credentials");
+    }
+    
+    // Checking if email Matches
+    const user =await User.findOne({email}).select("+password")
+    
+    if (!user?.email){
+        throw new CustomError("User not found", 404)
+    }
+    
+    const passMatches=await user.comparePassword(password)
+    if (!passMatches){
+        throw new CustomError("Invalid credentials, request denied", 403);
+
+    }
+    
+    const deleted =await User.findOneAndDelete({email})
+    if (!deleted){
+        throw new CustomError("Unable to delete user account, try again")
+    }
+    return res.status(200).json({
+        success :true,
+        message: "User account deleted succesfully"
+    })
+} )
+
+// User request for forgot password, token is granted through mail
+export const forgotPassword=asyncHandler(async (req, res)=>{
+    const {email }=req.body;
+
+    // validation
+    if (!email){
+        throw new CustomError("Email is required",403);
+    }
+
+    const user =await User.findOne({email})
+    if (!user){
+        throw new CustomError("User doesn't exist with this email", 404)
+    }
+
+    const frogotToken= await user.generateForgotPasswordToken();
+    await user.save({validateBeforeSave:false})
+    const resetUrl= `${req.protocol}://${req.get('host')}/api/auth/forgotpassword/${frogotToken}`
+    let options={
+        to : email,
+        subject: "Reset Password eCommerce",
+        text: `
+            Hello ${user.name},
+
+            Request for reset password has been recived againest the email : ${email}.
+
+            reset Link : ${resetUrl}
+
+            If it's not requested by you. 
+            contact our support...
+        `
+    }
+
+    try{
+        await mailHelper(options);
+    }
+    catch (error)
+    {   
+        user.ForgetPasswordToken=undefined;
+        user.forgotPasswordExpiry=undefined;
+        await user.save({validateBeforeSave:false})
+        
+        res.status(200).json({
+            success :true,
+            message :"Email has been sent with reset password link"
+        })
+    }
+})
+
+
+// User requests resetPassword with reset pass link sent through mail 
+export const resetPassword =asyncHandler(async (req, res)=>{
+    
 })

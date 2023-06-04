@@ -1,15 +1,18 @@
-import transporter from "nodemailer";
+import transporter from "../config/transporterConfig.js";
 import config from "../config/index.js";
 
-const mailHelper = nodemailer.createTransport({
-    host: config.SMTP_MAIL_HOST,
-    port: config.SMTP_Mail_PORT,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: config.SMTP_MAIL_USERNAME, // generated ethereal user
-      pass: config.SMTP_MAIL_PASSWORD, // generated ethereal password
-    },
-  });
+// send mail with defined transport object
+// options is an json object type
+const mailHelper = async (options)=>{
+    const message={
+      from: config.SMTP_SENDER_EMAIL, // sender address
+      to: options.to, // list of receivers
+      subject: options.subject, // Subject line
+      text: options.text, // plain text body
+      html: "<b>Hello world?</b>", // html body
+    }
 
+    await transporter.sendMail(message)
+};
 
-  export default mailHelper
+export default mailHelper

@@ -48,12 +48,12 @@ userSchema.methods={
     },
 
     //generate JWT token
-    getJwtToken : async function (){
+    getJwtToken : function (){
         const token= JWT.sign({_id: this._id }, config.JWT_SECRET,{ expiresIn:config.JWT_EXPIRY});
         return token
     },
 
-    // generate Forgot Password Token
+    // generate Forgot Password Token and stores in DB
     generateForgotPasswordToken: function (){
         const forgotToken = crypto.randomBytes(20).toString('hex');
         this.ForgetPasswordToken=crypto
