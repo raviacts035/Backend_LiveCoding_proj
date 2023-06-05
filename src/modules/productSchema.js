@@ -21,8 +21,12 @@ const ProductSchema = mongoose.Schema({
     },
     
     photos:[
-        {
-            secure_url:{
+        {   
+            publicID: {
+                type: String,
+                required: true
+            },
+            secureURL:{
                 type:String,
                 required:true
             }
