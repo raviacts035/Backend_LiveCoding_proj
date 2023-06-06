@@ -1,15 +1,15 @@
 import Product from "../modules/productSchema.js";
-import formidable from "formidable";
+// import formidable from "formidable";
 import asyncHandler from "../service/asyncHandler.js";
-import { s3FIleUpload, s3DeleteFile } from "../service/imageUploader.js";
-import { Mongoose } from "mongoose";
+// import { s3FIleUpload, s3DeleteFile } from "../service/imageUploader.js";
+import mongoose from "mongoose";
 import CustomError from "../utils/CustomError.js";
 // import fs from "fs";
-import { config } from "dotenv";
+import config from "../config/index.js";
 
 
 export const addProduct =asyncHandler(async (req,res)=>{
-    const productId= new Mongoose.Types.ObjectID().toHexString();
+    const productId= new mongoose.Types.ObjectId().toHexString();
     
     // const form = formidable({ multiples: true, keepExtensions:true });
     // form.parse(req, async (err, fields, files) => {
@@ -66,8 +66,10 @@ export const addProduct =asyncHandler(async (req,res)=>{
 
     const { name, price, discription, stock, collectionId} = req.body;
     if(!name || !price || !discription, !stock, !collectionId ){
-        throw new CustomError("Enter all required fields", 500)
+        throw new CustomError("Enter all required product fields", 500)
     }
+    console.log(req.body)
+    console.log(productId)
 
     let productImages = [];
     if (req.files) {
@@ -85,7 +87,6 @@ export const addProduct =asyncHandler(async (req,res)=>{
         }
     }
 
-
     // creating entry into DATABASE for new product
     const product =await Product.create({
         _id: productId,
@@ -97,7 +98,7 @@ export const addProduct =asyncHandler(async (req,res)=>{
         sold: 0,
         collectionId,
     })
-
+    console.log(product._id+" Product id")
     if (!product){
         throw new CustomError("Unable to create new product entry in DB", 500);
     }
@@ -111,14 +112,14 @@ export const addProduct =asyncHandler(async (req,res)=>{
 
 
 // update Products
-export const updateProduct = BigPromise(async (req, res) => {
+export const updateProduct = asyncHandler(async (req, res) => {
 
     const { name, price, discription, stock, collectionId} = req.body;
     if(!name || !price || !discription, !stock, !collectionId ){
         throw new CustomError("Enter all required fields", 500)
     }
 
-    const productID = req.params.productID;
+    let{Id: productID }=req.params;
     if (!productID) throw new CustomError("Product ID is required in request params :(", 400);
 
     const productToUpdate = await Product.findById(productID);
@@ -168,7 +169,7 @@ export const updateProduct = BigPromise(async (req, res) => {
 
 // getProducts 
 export const getProducts =asyncHandler(async (req,res)=>{
-    const products =Product.find({});
+    const products =await Product.find({});
 
     if(!products){
         throw new CustomError("No products avilable", 404)
@@ -182,7 +183,8 @@ export const getProducts =asyncHandler(async (req,res)=>{
 
 // finding product by ID in request url/parameter 
 export const getProductById =asyncHandler(async (req,res)=>{
-    let {id:productId} =req.params;
+    let{Id: productId }=req.params;
+
     if(!productId){
         throw new CustomError("Product Id is required", 500)
     }
@@ -221,13 +223,14 @@ export const getProductsByCollectionId= asyncHandler(async (req, res)=>{
 
 
 export const deleteProduct=asyncHandler(async (req,res)=>{
-    let {id:productId} =req.params;
+    let{Id: productId }=req.params;
+
     if(!productId){
         throw new CustomError("Product Id is required", 500)
     }
 
-    const productToDelete =await Product.findById(productId);
-
+    const productToDelete =await Product.findByIdAndDelete(productId);
+    console.log(productToDelete)
     if(!productToDelete){
         throw new CustomError("No product found", 404);
     }
@@ -245,7 +248,6 @@ export const deleteProduct=asyncHandler(async (req,res)=>{
     
     //deleting entrys from DATABASE
     productToDelete?.productImages?.map(async (image) => await cloudinary.v2.uploader.destroy(image?.publicID));
-    await productToDelete.remove();
 
     res.status(200).json({
         success:true,

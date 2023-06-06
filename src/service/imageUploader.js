@@ -1,4 +1,4 @@
-import s3 from "../config/s3Config.js";
+// import s3 from "../config/s3Config.js";
 
 
 // Uploading Object(media file) to AWS s3 bucket
