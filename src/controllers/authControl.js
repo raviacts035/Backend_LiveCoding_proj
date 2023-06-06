@@ -4,6 +4,7 @@ import asyncHandler from "../service/asyncHandler.js";
 import User from "../modules/userSchema.js";
 import CustomError from "../utils/CustomError.js";
 import mailHelper from "../utils/mailHelper.js";
+import crypto from "crypto";
 
 export const cookieOptions={
     expires : new Date(Date.now()+ 3* 24 * 60 * 60 * 1000),
@@ -163,6 +164,7 @@ export const forgotPassword=asyncHandler(async (req, res)=>{
 
     const frogotToken= await user.generateForgotPasswordToken();
     await user.save({validateBeforeSave:false})
+
     const resetUrl= `${req.protocol}://${req.get('host')}/api/auth/forgotpassword/${frogotToken}`
     let options={
         to : email,
@@ -180,19 +182,21 @@ export const forgotPassword=asyncHandler(async (req, res)=>{
     }
 
     try{
-        await mailHelper(options);
+        // await mailHelper(options);
     }
     catch (error)
     {   
         user.ForgetPasswordToken=undefined;
         user.forgotPasswordExpiry=undefined;
         await user.save({validateBeforeSave:false})
+        
+        throw new CustomError("Unable to generate reset mail",500)
 
-        res.status(200).json({
-            success :true,
-            message :"Email has been sent with reset password link"
-        })
     }
+    res.status(200).json({
+        success :true,
+        message :"Email has been sent with reset password link"
+    })
 })
 
 
@@ -205,12 +209,18 @@ export const resetPassword =asyncHandler(async (req, res)=>{
         throw new CustomError("Enter all required fields",403)
     };
 
-    const user= await User.find({
-            ForgetPasswordToken: resetToken,
+    const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex")
+
+    const user= await User.findOne({
+            ForgetPasswordToken: resetPasswordToken,
             forgotPasswordExpiry: {$gt : Date.now()}
     })
 
     if (!user){
+        console.log("from inside If")
         throw new CustomError("Reset Link is invalid or Expired",404);
     }
     
@@ -218,7 +228,7 @@ export const resetPassword =asyncHandler(async (req, res)=>{
     user.ForgetPasswordToken=undefined;
     user.forgotPasswordExpiry=undefined;
     await user.save()
-
+    user.password=undefined;
     const token =await user.getJwtToken()
 
     res.cookie("token",token, cookieOptions);
