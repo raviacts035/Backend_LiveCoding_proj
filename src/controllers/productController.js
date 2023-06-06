@@ -68,8 +68,6 @@ export const addProduct =asyncHandler(async (req,res)=>{
     if(!name || !price || !discription, !stock, !collectionId ){
         throw new CustomError("Enter all required product fields", 500)
     }
-    console.log(req.body)
-    console.log(productId)
 
     let productImages = [];
     if (req.files) {
@@ -98,7 +96,6 @@ export const addProduct =asyncHandler(async (req,res)=>{
         sold: 0,
         collectionId,
     })
-    console.log(product._id+" Product id")
     if (!product){
         throw new CustomError("Unable to create new product entry in DB", 500);
     }
